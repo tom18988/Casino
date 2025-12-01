@@ -1,11 +1,225 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casino</title>
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(180deg,#060606 0%, #0f0f13 100%);
+  color: #fff;
+}
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background-color: #1f1f1f;
+  color: #fff;
+}
+.logo {
+  font-size: 30px;
+  font-weight: bold;
+  color: goldenrod;
+  text-shadow: 0 0 15px goldenrod;
+  cursor: pointer;
+}
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 25px;
+  margin: 0;
+}
+.nav-links li a {
+  text-decoration: none;
+  color: white;
+  font-size: 16px;
+  transition: 0.3s;
+}
+.nav-links li a:hover {
+  color: goldenrod;
+}
+:root{
+  --size: 420px;
+  --panel: #111316;
+  --accent: #f0b90b;
+}
+.wheel-wrap{
+  width:var(--size);
+  height:var(--size);
+  display:grid;
+  place-items:center;
+  margin:40px auto;
+  position:relative;
+}
+.wheel{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  overflow:visible;
+  transform:rotate(0deg);
+  transition: transform 0s linear;
+}
+.hub{
+  width:86px;
+  height:86px;
+  border-radius:50%;
+  background:var(--panel);
+  display:grid;
+  place-items:center;
+  font-weight:700;
+  color:#fff;
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  border:6px solid rgba(255,255,255,0.03);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6), inset 0 4px 8px rgba(255,255,255,0.02);
+  z-index:3;
+}
+.pointer{
+  position:absolute;
+  top: -18px;
+  left:50%;
+  transform:translateX(-50%);
+  width:0;height:0;
+  border-left:14px solid transparent;
+  border-right:14px solid transparent;
+  border-bottom:28px solid var(--accent);
+  filter:drop-shadow(0 6px 8px rgba(0,0,0,0.6));
+  z-index:6;
+}
+.section{
+  display:none;
+  padding: 20px;
+}
+.section.active{
+  display:block;
+}
+.credit-box{
+  text-align:center;
+  margin-bottom:20px;
+  font-size:18px;
+}
+</style>
 </head>
 <body>
-    
+<nav class="navbar">
+  <div class="logo">Casino</div>
+  <ul class="nav-links">
+    <li><a href="#" data-target="dashboard">Dashboard</a></li>
+    <li><a href="#" data-target="roulette">Roulette</a></li>
+    <li><a href="#" data-target="poker">Poker</a></li>
+    <li><a href="#" data-target="blackjack">Black Jack</a></li>
+  </ul>
+</nav>
+
+<div id="dashboard" class="section active">
+  <h1>Bienvenue sur le Dashboard</h1>
+  <p>Accédez à vos jeux et statistiques ici.</p>
+</div>
+
+<div id="roulette" class="section">
+  <div class="credit-box">Crédits: <span id="credits">1000</span></div>
+  <div class="wheel-wrap">
+    <div class="pointer" aria-hidden="true"></div>
+    <div id="wheel" class="wheel" aria-hidden="true"></div>
+    <div class="hub">ROULETTE</div>
+  </div>
+  <button id="spinBtn" style="display:block;margin:20px auto;padding:10px 20px;background:#f0b90b;border:none;border-radius:8px;font-weight:700;color:#111;cursor:pointer;">SPIN (100 crédits)</button>
+</div>
+
+<div id="poker" class="section">
+  <h1>Poker</h1>
+  <p>Jeu de poker à implémenter ici.</p>
+</div>
+
+<div id="blackjack" class="section">
+  <h1>Black Jack</h1>
+  <p>Jeu de Black Jack à implémenter ici.</p>
+</div>
+
+<script>
+// Gestion des sections
+const links = document.querySelectorAll('.nav-links a');
+const sections = document.querySelectorAll('.section');
+links.forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const target = link.getAttribute('data-target');
+    sections.forEach(sec => sec.classList.remove('active'));
+    document.getElementById(target).classList.add('active');
+  });
+});
+
+// Roulette avec crédits
+let credits = 1000;
+const creditDisplay = document.getElementById('credits');
+const numbers = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+const redSet = new Set([32,19,21,25,34,27,36,30,23,5,16,1,14,9,18,7,12,3]);
+const wheel = document.getElementById('wheel');
+
+function createWheelSVG(size=420){
+  const cx = size/2, cy = size/2, r = size/2 - 6;
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS,'svg');
+  svg.setAttribute('width',size);
+  svg.setAttribute('height',size);
+  svg.setAttribute('viewBox',`0 0 ${size} ${size}`);
+  const total = numbers.length;
+  const anglePer = 360/total;
+  for(let i=0;i<total;i++){
+    const start = (i*anglePer - anglePer/2) * Math.PI/180;
+    const end = ((i+1)*anglePer - anglePer/2) * Math.PI/180;
+    const x1 = cx + r*Math.cos(start);
+    const y1 = cy + r*Math.sin(start);
+    const x2 = cx + r*Math.cos(end);
+    const y2 = cy + r*Math.sin(end);
+    const path = document.createElementNS(svgNS,'path');
+    const d = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} Z`;
+    path.setAttribute('d',d);
+    const num = numbers[i];
+    const fill = num===0 ? '#0f9d58' : redSet.has(num) ? '#c21807' : '#111';
+    path.setAttribute('fill',fill);
+    path.setAttribute('stroke','rgba(255,255,255,0.03)');
+    path.setAttribute('stroke-width','1');
+    svg.appendChild(path);
+  }
+  return svg;
+}
+wheel.appendChild(createWheelSVG());
+
+let currentAngle = 0;
+const spinBtn = document.getElementById('spinBtn');
+spinBtn.addEventListener('click', ()=>{
+  if(credits < 100){
+    alert('Crédits insuffisants !');
+    return;
+  }
+  credits -= 100;
+  creditDisplay.textContent = credits;
+
+  const rotations = 6 + Math.random() * 6;
+  const finalAngle = currentAngle + rotations*360 + Math.random()*360;
+  wheel.style.transition = 'transform 5s cubic-bezier(0.33, 1, 0.68, 1)';
+  wheel.style.transform = `rotate(${finalAngle}deg)`;
+  currentAngle = finalAngle % 360;
+
+  wheel.addEventListener('transitionend', ()=>{
+    wheel.style.transition='';
+    const index = Math.floor((360 - (currentAngle % 360)) / (360 / numbers.length)) % numbers.length;
+    const winningNumber = numbers[index];
+    let gain = 0;
+    if(winningNumber === 0) gain = 500;
+    else if(redSet.has(winningNumber)) gain = 200;
+    else gain = 100;
+    credits += gain;
+    creditDisplay.textContent = credits;
+    alert(`Numéro gagnant: ${winningNumber} - Crédit gagné: ${gain}`);
+  }, {once:true});
+});
+</script>
 </body>
 </html>

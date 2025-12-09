@@ -1,0 +1,109 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient( rgb(0, 0, 0) 0%, #0f0f13 100%);
+  color: #fff;
+}
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 30px;
+  background-color: #1f1f1f;
+  color: #fff;
+}
+.logo {
+  font-size: 30px;
+  font-weight: bold;
+  color: goldenrod;
+  text-shadow: 0 0 15px goldenrod;
+  cursor: pointer;
+}
+.solde {
+    background-color: #111316;
+    color: goldenrod;
+    padding: 15px;
+    border: #0f0f13;
+    font-size: 18px;
+    border-radius: 15px;
+}
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 25px;
+  margin: 0;
+}
+.nav-links li a {
+  text-decoration: none;
+  color: white;
+  font-size: 16px;
+  transition: 0.3s;
+}
+.nav-links li a:hover {
+  color: goldenrod;
+}
+:root{
+  --size: 420px;
+  --panel: #111316;
+  --accent: #f0b90b;
+}
+.wheel-wrap{
+  width:var(--size);
+  height:var(--size);
+  display:grid;
+  place-items:center;
+  margin:40px auto;
+  position:relative;
+}
+.timer {
+    color: goldenrod;
+    background-color: #111316;
+    font-size: 18px;
+    padding: 15px;
+    border-radius: 15px;
+}
+
+.wheel{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  overflow:visible;
+  transform:rotate(20deg);
+  transition: transform 0s linear;
+}
+.hub{
+  width:86px;
+  height:86px;
+  border-radius:50%;
+  background:var(--panel);
+  display:grid;
+  place-items:center;
+  font-weight:700;
+  color:#ffffffbe;
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  border:6px solid goldenrod;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6), inset 0 4px 8px rgba(255,255,255,0.02);
+  z-index:3;
+}
+.pointer{
+  position:absolute;
+  top: -12px;
+  left:50%;
+  transform:translateX(-50%);
+  width:0;height:0;
+  border-left:14px solid transparent;
+  border-right:14px solid transparent;
+  border-top:28px solid var(--accent);
+  filter:drop-shadow(0 6px 8px rgba(0,0,0,0.6));
+  z-index:6;
+}
+.section{
+  display:none;
+  padding: 20px;
+}
+.section.active{
+  display:block;
+}

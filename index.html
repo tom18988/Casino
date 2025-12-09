@@ -19,7 +19,17 @@
   </ul>
 </nav>
 
-<div id="dashboard" class="section active">
+<!-- Login / Signup Form -->
+<div id="auth" class="section active">
+  <h2>Connexion / Inscription</h2>
+  <input id="email" type="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Mot de passe">
+  <button onclick="signup()">Créer un compte</button>
+  <button onclick="login()">Se connecter</button>
+  <button onclick="logout()">Se déconnecter</button>
+</div>
+
+<div id="dashboard" class="section">
   <h1>Bienvenue sur le Dashboard</h1>
   <p>Accédez à vos jeux et statistiques ici.</p>
 </div>
@@ -30,7 +40,7 @@
     <div id="wheel" class="wheel" aria-hidden="true"></div>
     <div class="hub">ROULETTE</div>
   </div>
-  <button id="spinBtn" style="display:block;margin:20px auto;padding:10px 20px;background:#f0b90b;border:none;border-radius:8px;font-weight:700;color:#111;cursor:pointer;">SPIN (100 crédits)</button>
+  <button id="spinBtn" class="spinbtn">SPIN (100 crédits)</button>
 </div>
 
 <div id="poker" class="section">
@@ -43,106 +53,193 @@
   <p>Jeu de Black Jack à implémenter ici.</p>
 </div>
 
-<script>
-// Gestion des sections
-const links = document.querySelectorAll('.nav-links a');
-const sections = document.querySelectorAll('.section');
-links.forEach(link => {
-  link.addEventListener('click', e => {
-    e.preventDefault();
-    const target = link.getAttribute('data-target');
-    sections.forEach(sec => sec.classList.remove('active'));
-    document.getElementById(target).classList.add('active');
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3WRiWeRruGYxlFsrJ0HVcBScXboslw88",
+    authDomain: "casino-c6de8.firebaseapp.com",
+    projectId: "casino-c6de8",
+    storageBucket: "casino-c6de8.firebasestorage.app",
+    messagingSenderId: "464433228224",
+    appId: "1:464433228224:web:53196af92955df32918025"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  window.signup = async function() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      await setDoc(doc(db, "users", user.uid), { credits: 1000 });
+      alert('Compte créé avec 1000 crédits !');
+    } catch(error) {
+      alert(error.message);
+    }
+  };
+
+  window.login = async function() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      const docRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(docRef);
+      if(docSnap.exists()) {
+        credits = docSnap.data().credits;
+        creditDisplay.textContent = credits;
+      } else {
+        await setDoc(doc(db, "users", user.uid), { credits: 1000 });
+        credits = 1000;
+        creditDisplay.textContent = credits;
+      }
+      document.getElementById('auth').classList.remove('active');
+      document.getElementById('dashboard').classList.add('active');
+    } catch(error) {
+      alert(error.message);
+    }
+  };
+
+  window.logout = function() {
+    signOut(auth).then(() => {
+      alert('Déconnecté !');
+      document.getElementById('auth').classList.add('active');
+      document.getElementById('dashboard').classList.remove('active');
+    });
+  };
+
+  onAuthStateChanged(auth, async (user) => {
+    if(!user){
+      document.getElementById('auth').classList.add('active');
+      document.getElementById('dashboard').classList.remove('active');
+      document.getElementById('roulette').classList.remove('active');
+      document.getElementById('poker').classList.remove('active');
+      document.getElementById('blackjack').classList.remove('active');
+    } else {
+      const docRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(docRef);
+      if(docSnap.exists()) {
+        credits = docSnap.data().credits;
+        creditDisplay.textContent = credits;
+      }
+    }
   });
-});
 
-// Roulette avec crédits
-let credits = 1000;
-const creditDisplay = document.getElementById('credits');
-const numbers = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
-const redSet = new Set([32,19,21,25,34,27,36,30,23,5,16,1,14,9,18,7,12,3]);
-const wheel = document.getElementById('wheel');
-const timerDisplay = document.getElementById("timer");
+  const links = document.querySelectorAll('.nav-links a');
+  const sections = document.querySelectorAll('.section');
+  links.forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const target = link.getAttribute('data-target');
+      if(auth.currentUser){
+        sections.forEach(sec => sec.classList.remove('active'));
+        document.getElementById(target).classList.add('active');
+      } else {
+        alert('Connectez-vous pour accéder à cette section !');
+      }
+    });
+  });
 
-function createWheelSVG(size=420){
-  const cx = size/2, cy = size/2, r = size/2 - 6;
-  const svgNS = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(svgNS,'svg');
-  svg.setAttribute('width',size);
-  svg.setAttribute('height',size);
-  svg.setAttribute('viewBox',`0 0 ${size} ${size}`);
-  const total = numbers.length;
-  const anglePer = 360/total;
-  for(let i=0;i<total;i++){
-    const start = (i*anglePer - anglePer/2) * Math.PI/180;
-    const end = ((i+1)*anglePer - anglePer/2) * Math.PI/180;
-    const x1 = cx + r*Math.cos(start);
-    const y1 = cy + r*Math.sin(start);
-    const x2 = cx + r*Math.cos(end);
-    const y2 = cy + r*Math.sin(end);
-    const path = document.createElementNS(svgNS,'path');
-    const d = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} Z`;
-    path.setAttribute('d',d);
-    const num = numbers[i];
-    const fill = num===0 ? '#0f9d58' : redSet.has(num) ? '#c21807' : '#111';
-    path.setAttribute('fill',fill);
-    path.setAttribute('stroke','rgba(255,255,255,0.03)');
-    path.setAttribute('stroke-width','1');
-    svg.appendChild(path);
+  // Roulette avec crédits
+  let credits = 1000;
+  const creditDisplay = document.getElementById('credits');
+  const numbers = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+  const redSet = new Set([32,19,21,25,34,27,36,30,23,5,16,1,14,9,18,7,12,3]);
+  const wheel = document.getElementById('wheel');
+  const timerDisplay = document.getElementById("timer");
+
+  function createWheelSVG(size=420){
+    const cx = size/2, cy = size/2, r = size/2 - 6;
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS,'svg');
+    svg.setAttribute('width',size);
+    svg.setAttribute('height',size);
+    svg.setAttribute('viewBox',`0 0 ${size} ${size}`);
+    const total = numbers.length;
+    const anglePer = 360/total;
+    for(let i=0;i<total;i++){
+      const start = (i*anglePer - anglePer/2) * Math.PI/180;
+      const end = ((i+1)*anglePer - anglePer/2) * Math.PI/180;
+      const x1 = cx + r*Math.cos(start);
+      const y1 = cy + r*Math.sin(start);
+      const x2 = cx + r*Math.cos(end);
+      const y2 = cy + r*Math.sin(end);
+      const path = document.createElementNS(svgNS,'path');
+      const d = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} Z`;
+      path.setAttribute('d',d);
+      const num = numbers[i];
+      const fill = num===0 ? '#0f9d58' : redSet.has(num) ? '#c21807' : '#111';
+      path.setAttribute('fill',fill);
+      path.setAttribute('stroke','rgba(255,255,255,0.03)');
+      path.setAttribute('stroke-width','1');
+      svg.appendChild(path);
+    }
+    return svg;
   }
-  return svg;
-}
-wheel.appendChild(createWheelSVG());
+  wheel.appendChild(createWheelSVG());
 
-let currentAngle = 0;
-const spinBtn = document.getElementById('spinBtn');
-const cooldown = 5;
-spinBtn.addEventListener('click', ()=>{
+  let currentAngle = 0;
+  const spinBtn = document.getElementById('spinBtn');
+  const cooldownTime = 5;
 
-  if(credits < 100){
-    alert('Crédits insuffisants !');
-    return;
-  }
-  credits -= 100;
-  creditDisplay.textContent = credits;
+  spinBtn.addEventListener('click', async ()=>{
+    if(!auth.currentUser){
+      alert('Connectez-vous pour jouer !');
+      return;
+    }
 
-  const rotations = 6 + Math.random() * 6;
-  const finalAngle = currentAngle + rotations*360 + Math.random()*360;
-  wheel.style.transition = 'transform 5s cubic-bezier(0.33, 1, 0.68, 1)';
-  wheel.style.transform = `rotate(${finalAngle}deg)`;
-  currentAngle = finalAngle % 360;
-
-  wheel.addEventListener('transitionend', ()=>{
-    wheel.style.transition='';
-    const index = Math.floor((360 - (currentAngle % 360)) / (360 / numbers.length)) % numbers.length;
-    const winningNumber = numbers[index];
-    let gain = 0;
-    if(winningNumber === 0) gain = 500;
-    else if(redSet.has(winningNumber)) gain = 200;
-    else gain = 100;
-    credits += gain;
+    if(credits < 100){
+      alert('Crédits insuffisants !');
+      return;
+    }
+    credits -= 100;
     creditDisplay.textContent = credits;
-    alert(`Numéro gagnant: ${winningNumber} - Crédit gagné: ${gain}`);
-  }, {once:true});
-})
-const cooldownTime = 5; // secondes
 
-spinBtn.addEventListener("click", () => {
-  spinBtn.disabled = true;
-  let timeLeft = cooldownTime;
-  timerDisplay.textContent = `Attendez : ${timeLeft}s`;
+    const rotations = 6 + Math.random() * 6;
+    const finalAngle = currentAngle + rotations*360 + Math.random()*360;
+    wheel.style.transition = 'transform 5s cubic-bezier(0.33, 1, 0.68, 1)';
+    wheel.style.transform = `rotate(${finalAngle}deg)`;
+    currentAngle = finalAngle % 360;
 
-  const interval = setInterval(() => {
-    timeLeft--;
+    wheel.addEventListener('transitionend', async ()=>{
+      wheel.style.transition='';
+      const index = Math.floor((360 - (currentAngle % 360)) / (360 / numbers.length)) % numbers.length;
+      const winningNumber = numbers[index];
+      let gain = 0;
+      if(winningNumber === 0) gain = 500;
+      else if(redSet.has(winningNumber)) gain = 200;
+      else gain = 100;
+      credits += gain;
+      creditDisplay.textContent = credits;
+
+      // Mise à jour Firestore
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      await updateDoc(userRef, { credits: credits });
+
+      alert(`Numéro gagnant: ${winningNumber} - Crédit gagné: ${gain}`);
+    }, {once:true});
+
+    spinBtn.disabled = true;
+    let timeLeft = cooldownTime;
     timerDisplay.textContent = `Attendez : ${timeLeft}s`;
 
-    if (timeLeft <= 0) {
-      clearInterval(interval);
-      timerDisplay.textContent = "Attendez :";
-      spinBtn.disabled = false;
-    }
-  }, 1000);
-});
+    const interval = setInterval(() => {
+      timeLeft--;
+      timerDisplay.textContent = `Attendez : ${timeLeft}s`;
+      if (timeLeft <= 0) {
+        clearInterval(interval);
+        timerDisplay.textContent = "Attendez :";
+        spinBtn.disabled = false;
+      }
+    }, 1000);
+  });
 </script>
 </body>
 </html>

@@ -107,3 +107,41 @@ body {
 .section.active{
   display:block;
 }
+
+#auth {
+max-width: 400px;
+margin: 50px auto;
+padding: 30px;
+background: #1f1f1f;
+border-radius: 15px;
+box-shadow: 0 0 20px rgba(255, 185, 11, 0.5);
+text-align: center;
+}
+#auth h2 {
+margin-bottom: 20px;
+color: #f0b90b;
+}
+#auth input {
+width: 80%;
+padding: 10px;
+margin: 10px 0;
+border: none;
+border-radius: 8px;
+outline: none;
+}
+#auth button {
+width: 85%;
+padding: 10px;
+margin: 10px 0;
+border: none;
+border-radius: 8px;
+font-weight: bold;
+cursor: pointer;
+background: linear-gradient(90deg, #f0b90b, #ffde59);
+color: #111;
+transition: all 0.3s ease;
+}
+#auth button:hover {
+transform: scale(1.05);
+box-shadow: 0 0 15px #f0b90b;
+}

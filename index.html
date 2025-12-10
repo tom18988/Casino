@@ -4,11 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="style.css">
-<title>Casino</title>
+<link rel="icon" type="image.png" href="logo.png">
+<title>Premium Casino</title>
 </head>
 <body>
 <nav class="navbar">
-  <div class="logo">Casino</div>
+  <div class="titre">
+   <img src="logo.png" class="logo"></img>
+  <h3 class="titrep">Premium Casino</h3>
+  </div>
   <h4 class="solde">solde : <span id="credits">1000</span></h4>
   <div id="timer" class="timer">Attendez :</div>
   <ul class="nav-links">
@@ -36,27 +40,38 @@
 
 <!-- 🎯 ROULETTE -->
 <div id="roulette" class="section">
-  <div class="wheel-wrap">
-    <div class="pointer"></div>
-    <div id="wheel" class="wheel"></div>
-    <div class="hub">ROULETTE</div>
+
+  <div class="roulette-container">
+    <div class="wheel-wrap">
+      <div class="pointer"></div>
+      <div id="wheel" class="wheel"></div>
+      <div class="hub">🎰</div>
+    </div>
+
+    <button id="spinBtn" class="spinbtn">LANCER</button>
+    <div id="timer" class="timer">Attendez :</div>
   </div>
 
-  <!-- ✅ Zone de mise complète -->
-  <div class="bet-zone">
-      <h3>Faire une mise</h3>
-      <input id="betAmount" type="number" placeholder="Montant" min="1">
+  <div class="bet-card">
+      <h3 class="bet-text">Faire une mise (min:10 max:3000)
+      </h3>
 
-      <select id="betType">
-        <option value="pair">Pair</option>
-        <option value="impair">Impair</option>
-        <option value="plein">Numéro Plein</option>
-      </select>
+      <div class="input-line">
+        <input class="entremise" id="betAmount" type="number" placeholder="Entrez votre mise" min="1" max="3000">
+      </div>
 
-      <input id="betNumber" type="number" placeholder="0 - 36" min="0" max="36" style="display:none;">
+      <div class="input-line">
+        <select id="betType" class="bet-type">
+          <option value="pair">Pair</option>
+          <option value="impair">Impair</option>
+          <option value="plein">Numéro Plein</option>
+        </select>
+      </div>
+
+      <div class="input-line">
+        <input class="selecteur-nombre" id="betNumber" type="number" placeholder="0 - 36" min="0" max="36" style="display:none;">
+      </div>
   </div>
-
-  <button id="spinBtn" class="spinbtn">LANCER</button>
 </div>
 
 <div id="poker" class="section">
@@ -70,34 +85,34 @@
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyC3WRiWeRruGYxlFsrJ0HVcBScXboslw88",
-    authDomain: "casino-c6de8.firebaseapp.com",
-    projectId: "casino-c6de8",
-    storageBucket: "casino-c6de8.firebasestorage.app",
-    messagingSenderId: "464433228224",
-    appId: "1:464433228224:web:53196af92955df32918025"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyC3WRiWeRruGYxlFsrJ0HVcBScXboslw88",
+  authDomain: "casino-c6de8.firebaseapp.com",
+  projectId: "casino-c6de8",
+  storageBucket: "casino-c6de8.firebasestorage.app",
+  messagingSenderId: "464433228224",
+  appId: "1:464433228224:web:53196af92955df32918025"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  window.signup = async function() {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await setDoc(doc(db, "users", userCredential.user.uid), { credits: 1000 });
-      alert('Compte créé avec 1000 crédits !');
-    } catch(error) { alert(error.message); }
-  };
+window.signup = async function() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    await setDoc(doc(db, "users", userCredential.user.uid), { credits: 1000 });
+    alert('Compte créé avec 1000 crédits !');
+  } catch(error) { alert(error.message); }
+};
 
-  window.login = async function() {
+window.login = async function() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
 
@@ -124,125 +139,152 @@
   }
 };
 
-
-  window.logout = function() {
-    signOut(auth).then(() => {
-      alert('Déconnecté !');
-      sections.forEach(sec => sec.classList.remove('active'));
-      document.getElementById('auth').classList.add('active');
-    });
-  };
-
-  onAuthStateChanged(auth, async (user) => {
-    if(!user) {
-      sections.forEach(sec => sec.classList.remove('active'));
-      document.getElementById('auth').classList.add('active');
-      return;
-    }
-    const snap = await getDoc(doc(db, "users", user.uid));
-    credits = snap.data().credits;
-    creditDisplay.textContent = credits;
+window.logout = function() {
+  signOut(auth).then(() => {
+    alert('Déconnecté !');
+    sections.forEach(sec => sec.classList.remove('active'));
+    document.getElementById('auth').classList.add('active');
   });
+};
 
-  const links = document.querySelectorAll('.nav-links a');
-  const sections = document.querySelectorAll('.section');
-  links.forEach(link => {
-    link.addEventListener('click', e => {
-      e.preventDefault();
-      if(!auth.currentUser) return alert("Connectez-vous!");
-      sections.forEach(sec => sec.classList.remove('active'));
-      document.getElementById(link.dataset.target).classList.add('active');
-    });
-  });
-
-  // 🎯 Roulette + Paris
-  let credits = 1000;
-  const creditDisplay = document.getElementById('credits');
-  const numbers = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
-  const redSet = new Set([32,19,21,25,34,27,36,30,23,5,16,1,14,9,18,7,12,3]);
-
-  const wheel = document.getElementById('wheel');
-  function createWheelSVG(size=420){
-    const cx = size/2, cy = size/2, r = size/2 - 6;
-    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
-    svg.setAttribute('width',size);
-    svg.setAttribute('height',size);
-    for(let i=0;i<numbers.length;i++){
-      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-      const angle = 360 / numbers.length;
-      const start = ((i*angle)-angle/2)*Math.PI/180;
-      const end = (((i+1)*angle)-angle/2)*Math.PI/180;
-      const x1 = cx + r*Math.cos(start), y1 = cy + r*Math.sin(start);
-      const x2 = cx + r*Math.cos(end),   y2 = cy + r*Math.sin(end);
-      path.setAttribute('d',`M${cx} ${cy} L${x1} ${y1} A${r} ${r} 0 0 1 ${x2} ${y2} Z`);
-      const n = numbers[i];
-      path.setAttribute('fill', n===0 ? 'green' : redSet.has(n) ? 'red' : 'black');
-      svg.appendChild(path);
-    }
-    return svg;
+onAuthStateChanged(auth, async (user) => {
+  if(!user) {
+    sections.forEach(sec => sec.classList.remove('active'));
+    document.getElementById('auth').classList.add('active');
+    return;
   }
-  wheel.appendChild(createWheelSVG());
+  const snap = await getDoc(doc(db, "users", user.uid));
+  credits = snap.data().credits;
+  creditDisplay.textContent = credits;
+});
 
-  let currentAngle = 0;
-  const spinBtn = document.getElementById('spinBtn');
-  const timerDisplay = document.getElementById("timer");
-
-  const betAmount = document.getElementById("betAmount");
-  const betType = document.getElementById("betType");
-  const betNumber = document.getElementById("betNumber");
-
-  betType.addEventListener("change", ()=> {
-    betNumber.style.display = betType.value === "plein" ? "block" : "none";
+const links = document.querySelectorAll('.nav-links a');
+const sections = document.querySelectorAll('.section');
+links.forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    if(!auth.currentUser) return alert("Connectez-vous!");
+    sections.forEach(sec => sec.classList.remove('active'));
+    document.getElementById(link.dataset.target).classList.add('active');
   });
+});
 
-  spinBtn.addEventListener('click', async ()=>{
-    if(!auth.currentUser) return alert('Connectez-vous !');
+// 🎯 Roulette + Paris
+let credits = 1000;
+const creditDisplay = document.getElementById('credits');
+const numbers = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+const redSet = new Set([32,19,21,25,34,27,36,30,23,5,16,1,14,9,18,7,12,3]);
 
-    const mise = parseInt(betAmount.value);
-    const type = betType.value;
-    const numChoisi = parseInt(betNumber.value);
+const wheel = document.getElementById('wheel');
 
-    if(!mise || mise <= 0) return alert("Mise invalide !");
-    if(type === "plein" && (numChoisi < 0 || numChoisi > 36 || isNaN(numChoisi))) return alert("Numéro invalide !");
-    if(credits < mise) return alert("Pas assez de crédits !");
+function createWheelSVG(size=420){
+  const cx = size/2, cy = size/2, r = size/2 - 6;
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('width',size);
+  svg.setAttribute('height',size);
 
-    credits -= mise;
+  const angleStep = 360 / numbers.length;
+
+  for(let i=0;i<numbers.length;i++){
+    const startAngle = i * angleStep;
+    const endAngle = (i+1) * angleStep;
+
+    const startRad = (startAngle-90)*Math.PI/180;
+    const endRad = (endAngle-90)*Math.PI/180;
+
+    const x1 = cx + r*Math.cos(startRad), y1 = cy + r*Math.sin(startRad);
+    const x2 = cx + r*Math.cos(endRad),   y2 = cy + r*Math.sin(endRad);
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',`M${cx} ${cy} L${x1} ${y1} A${r} ${r} 0 0 1 ${x2} ${y2} Z`);
+    const n = numbers[i];
+    path.setAttribute('fill', n===0?'green': redSet.has(n)?'red':'black');
+    svg.appendChild(path);
+
+    // Ajouter le texte
+    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    const midAngle = (startAngle + endAngle)/2 - 90;
+    const rad = midAngle * Math.PI/180;
+    const textRadius = r * 0.78;
+    const tx = cx + textRadius * Math.cos(rad);
+    const ty = cy + textRadius * Math.sin(rad);
+    text.setAttribute('x', tx);
+    text.setAttribute('y', ty);
+    text.setAttribute('fill','white');
+    text.setAttribute('font-size','16');
+    text.setAttribute('text-anchor','middle');
+    text.setAttribute('alignment-baseline','middle');
+    text.setAttribute('transform', `rotate(${midAngle+90} ${tx} ${ty})`);
+    text.textContent = n;
+    svg.appendChild(text);
+  }
+  return svg;
+}
+
+wheel.appendChild(createWheelSVG());
+
+let currentAngle = 0;
+const spinBtn = document.getElementById('spinBtn');
+const timerDisplay = document.getElementById("timer");
+
+const betAmount = document.getElementById("betAmount");
+const betType = document.getElementById("betType");
+const betNumber = document.getElementById("betNumber");
+
+betType.addEventListener("change", ()=> {
+  betNumber.style.display = betType.value === "plein" ? "block" : "none";
+});
+
+spinBtn.addEventListener('click', async ()=>{
+  if(!auth.currentUser) return alert('Connectez-vous !');
+
+  const mise = parseInt(betAmount.value);
+  const type = betType.value;
+  const numChoisi = parseInt(betNumber.value);
+
+  if(!mise || mise <= 10) return alert("Mise invalide ! minimum 10 !");
+  if(!mise || mise >= 3000) return alert("Mise invalide ! maximum 3000 !")
+  if(type === "plein" && (numChoisi < 0 || numChoisi > 36 || isNaN(numChoisi))) return alert("Numéro invalide !");
+  if(credits < mise) return alert("Pas assez de crédits !");
+
+  credits -= mise;
+  creditDisplay.textContent = credits;
+  await updateDoc(doc(db, "users", auth.currentUser.uid), { credits });
+
+  const rotations = 6 + Math.random()*6;
+  const finalAngle = currentAngle + rotations*360;
+  wheel.style.transition = 'transform 5s ease-out';
+  wheel.style.transform = `rotate(${finalAngle}deg)`;
+  currentAngle = finalAngle % 360;
+
+  wheel.addEventListener('transitionend', async ()=>{
+    wheel.style.transition = '';
+
+    const index = Math.floor((360 - (currentAngle % 360)) / (360/numbers.length)) % numbers.length;
+    const winningNumber = numbers[index];
+    let gain = 0;
+
+    if(type === "pair" && winningNumber !== 0 && winningNumber % 2 === 0) gain = mise * 2;
+    if(type === "impair" && winningNumber % 2 === 1) gain = mise * 2;
+    if(type === "plein" && winningNumber === numChoisi) gain = mise * 35;
+
+    credits += gain;
     creditDisplay.textContent = credits;
     await updateDoc(doc(db, "users", auth.currentUser.uid), { credits });
 
-    const rotations = 6 + Math.random()*6;
-    const finalAngle = currentAngle + rotations*360;
-    wheel.style.transition = 'transform 5s ease-out';
-    wheel.style.transform = `rotate(${finalAngle}deg)`;
-    currentAngle = finalAngle % 360;
+    alert(`Résultat: ${winningNumber}\nMise: ${mise}\nGain: ${gain}`);
+  }, {once:true});
 
-    wheel.addEventListener('transitionend', async ()=>{
-      wheel.style.transition = '';
-
-      const index = Math.floor((360 - (currentAngle % 360)) / (360/numbers.length)) % numbers.length;
-      const winningNumber = numbers[index];
-      let gain = 0;
-
-      if(type === "pair"   && winningNumber !== 0 && winningNumber % 2 === 0) gain = mise * 2;
-      if(type === "impair" && winningNumber % 2 === 1) gain = mise * 2;
-      if(type === "plein"  && winningNumber === numChoisi) gain = mise * 36;
-
-      credits += gain;
-      creditDisplay.textContent = credits;
-      await updateDoc(doc(db, "users", auth.currentUser.uid), { credits });
-
-      alert(`Résultat: ${winningNumber}\nMise: ${mise}\nGain: ${gain}`);
-    }, {once:true});
-
-    spinBtn.disabled = true;
-    let t = 5;
-    timerDisplay.textContent = `Attendez : ${t}s`;
-    const inter = setInterval(()=>{
-      t--; timerDisplay.textContent = `Attendez : ${t}s`;
-      if(t<=0){ clearInterval(inter); spinBtn.disabled=false; timerDisplay.textContent="Attendez :"; }
-    },1000);
-  });
+  spinBtn.disabled = true;
+  let t = 5;
+  timerDisplay.textContent = `Attendez : ${t}s`;
+  const inter = setInterval(()=>{
+    t--; timerDisplay.textContent = `Attendez : ${t}s`;
+    if(t<=0){ clearInterval(inter); spinBtn.disabled=false; timerDisplay.textContent="Attendez :"; }
+  },1000);
+});
 </script>
 </body>
 </html>
+
 

@@ -13,14 +13,14 @@
    <img src="logo.png" class="logo"></img>
   <h3 class="titrep">Premium Casino</h3>
   </div>
-  <h4 class="solde">solde : <span id="credits">1000</span></h4>
-  <div id="timer" class="timer">Attendez :</div>
+  
   <ul class="nav-links">
-    <li><a href="#" data-target="dashboard">Dashboard</a></li>
-    <li><a href="#" data-target="roulette">Roulette</a></li>
-    <li><a href="#" data-target="poker">Poker</a></li>
-    <li><a href="#" data-target="blackjack">Black Jack</a></li>
+    <li><a class="btndashboard" href="#" data-target="dashboard">Dashboard</a></li>
+    <li><a class="btnroulette" href="#" data-target="roulette">Roulette</a></li>
+    <li><a class="btnpoker" href="#" data-target="poker">Poker</a></li>
+    <li><a class="btnblackjack" href="#" data-target="blackjack">Black Jack</a></li>
   </ul>
+  <h4 class="solde">solde : <span id="credits">1000</span></h4>
 </nav>
 
 <!-- Login / Signup Form -->
@@ -75,8 +75,6 @@
 </div>
 
 <div id="poker" class="section">
-  <h1>Poker</h1>
-  <p>Jeu de poker à implémenter ici.</p>
 </div>
 
 <div id="blackjack" class="section">
@@ -84,11 +82,31 @@
   <p>Jeu de Black Jack à implémenter ici.</p>
 </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!---connecte avec la bd---->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+// config bd
 const firebaseConfig = {
   apiKey: "AIzaSyC3WRiWeRruGYxlFsrJ0HVcBScXboslw88",
   authDomain: "casino-c6de8.firebaseapp.com",
@@ -98,10 +116,12 @@ const firebaseConfig = {
   appId: "1:464433228224:web:53196af92955df32918025"
 };
 
+// variable bd
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// création de compte/création d'une variable dans bd
 window.signup = async function() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
@@ -112,6 +132,7 @@ window.signup = async function() {
   } catch(error) { alert(error.message); }
 };
 
+// connection
 window.login = async function() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
@@ -151,7 +172,9 @@ onAuthStateChanged(auth, async (user) => {
   if(!user) {
     sections.forEach(sec => sec.classList.remove('active'));
     document.getElementById('auth').classList.add('active');
-    return;
+  } else {
+    document.getElementById('auth').classList.remove('active');
+    document.getElementById('dashboard').classList.add('active')
   }
   const snap = await getDoc(doc(db, "users", user.uid));
   credits = snap.data().credits;
@@ -242,8 +265,8 @@ spinBtn.addEventListener('click', async ()=>{
   const type = betType.value;
   const numChoisi = parseInt(betNumber.value);
 
-  if(!mise || mise <= 10) return alert("Mise invalide ! minimum 10 !");
-  if(!mise || mise >= 3000) return alert("Mise invalide ! maximum 3000 !")
+  if(!mise || mise <= 9) return alert("Mise invalide ! minimum 10 !");
+  if(!mise || mise >= 3001) return alert("Mise invalide ! maximum 3000 !")
   if(type === "plein" && (numChoisi < 0 || numChoisi > 36 || isNaN(numChoisi))) return alert("Numéro invalide !");
   if(credits < mise) return alert("Pas assez de crédits !");
 
@@ -286,5 +309,6 @@ spinBtn.addEventListener('click', async ()=>{
 </script>
 </body>
 </html>
+
 
 
